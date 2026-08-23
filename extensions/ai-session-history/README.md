@@ -13,6 +13,7 @@ Supports **Grok**, **Claude Code**, **Codex**, **GitHub Copilot CLI**, **Cursor 
 - **Resume** — opens a new terminal in the active worktree and runs the CLI’s resume command
 - **Start new** — split button: primary starts the last-chosen / first-available CLI; chevron picks which CLI (stored in extension storage)
 - **Palette** — **AI Sessions: Resume…** searchable modal across all installed providers
+- **Import projects** — **AI Sessions: Import Projects…** scans every provider's session store, recovers the distinct project folders those sessions ran in, and registers the ones you pick as Muxy projects (the inverse of the panel; see below)
 
 ## Requirements
 
@@ -84,6 +85,39 @@ Copilot session dirs live in a **global** `~/.copilot/session-state/` tree (not 
 
 Without sqlite (or without path columns), only the residual mtime wave runs — large multi-project homes may underfill older sessions for the active cwd until the DB index is available.
 
+## Import projects from sessions (reverse mapping)
+
+**AI Sessions: Import Projects…** (palette or the topbar `folder.badge.plus` icon)
+is the **inverse** of the panel: instead of listing sessions for the active
+project, it scans **every** provider's session store, collects the distinct
+project directories those sessions ran in, and lets you register the ones you
+pick as Muxy projects — skipping anything already registered.
+
+A native picker lists the discovered folders that aren't registered yet. Pick
+**Add all N projects**, or add them one at a time (the picker reopens with the
+rest; press **Esc** when done). Each row shows which providers have sessions
+there. Folders that no longer exist on disk are skipped, and you're returned to
+the project you started from.
+
+It reuses the same host-fs and pure-JS scan helpers as the panel, so path
+recovery per provider is:
+
+| CLI | Path recovery |
+| --- | --- |
+| Grok | Decode the `urlencode(cwd)` dir name — no file reads |
+| Claude | Read the newest transcript head for the recorded `cwd` |
+| Codex | `SELECT DISTINCT cwd` from the newest `state_*.sqlite` (JSONL rollout fallback) |
+| Copilot | Distinct path columns in the DBs + `session-state/*/workspace.yaml` |
+| OpenCode | `SELECT DISTINCT directory` from `opencode.db` |
+
+**Cursor is not supported** for this reverse-mapping: its store directory is an
+`md5(cwd)` hash and no readable field records the original path, so the project
+directory cannot be recovered. It runs as a
+[`runScript`](https://muxy.app/docs/extensions/scripts) command (not a panel)
+because `muxy.projects.add` switches the active project — which would tear down a
+live panel mid-batch — so the whole batch registers reliably in one synchronous
+pass. Requires the `projects:write` permission.
+
 ## Remote workspaces
 
 On SSH / remote Muxy workspaces, `muxy.exec` runs on the **remote** host. You see remote session stores, not Mac-local history from a local-only CLI. Remotes need the same host tools (and `sqlite3` for Codex/Copilot).
@@ -111,9 +145,12 @@ src/lib/host-fs.js               # createHostFs(exec) over fixed host binaries
 src/lib/sessions/                # detection, grouping, manage/scan façade
 src/lib/sessions/scan/*          # per-provider pure JS scanners
 src/lib/sessions/manage/*        # rename / delete via host-fs
+src/lib/discover/*               # per-provider "distinct project paths" (reverse of scan)
+src/lib/discover/index.js        # collectProjects + registered-set diff (synchronous)
 src/lib/provider-icons.js        # vendored monochrome Muxy ProviderIcons
 src/assets/provider-icons/       # SVG sources (re-copy from muxy core if needed)
-scripts/resume-picker-entry.js   # palette entry (bundled to IIFE)
-scripts/resume-picker.built.js   # built IIFE for runScript
-test/                            # Bun tests (host-fs, scan, manage, helpers)
+scripts/resume-picker-entry.js   # Resume… palette entry (bundled to IIFE)
+scripts/import-projects-entry.js # Import Projects… palette entry (bundled to IIFE)
+scripts/*.built.js               # built IIFEs for runScript
+test/                            # Bun tests (host-fs, scan, manage, discover, helpers)
 ```
