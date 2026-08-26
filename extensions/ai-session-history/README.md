@@ -14,6 +14,7 @@ Supports **Grok**, **Claude Code**, **Codex**, **GitHub Copilot CLI**, **Cursor 
 - **Start new** — split button: primary starts the last-chosen / first-available CLI; chevron picks which CLI (stored in extension storage)
 - **Palette** — **AI Sessions: Resume…** searchable modal across all installed providers
 - **Import projects** — **AI Sessions: Import Projects…** scans every provider's session store, recovers the distinct project folders those sessions ran in, and registers the ones you pick as Muxy projects (the inverse of the panel; see below)
+- **Custom launchers** — save named command lines with their own options and env vars, then start one per session via **AI Sessions: Launch Custom…** (see below). Ordinary sessions are unaffected
 
 ## Requirements
 
@@ -118,6 +119,25 @@ because `muxy.projects.add` switches the active project — which would tear dow
 live panel mid-batch — so the whole batch registers reliably in one synchronous
 pass. Requires the `projects:write` permission.
 
+## Custom launchers
+
+Define reusable AI launch presets — a command line with **options and environment variables** —
+and start one only when you pick it, so your normal `claude`/`opencode`/`copilot` sessions are never
+changed.
+
+- **Manage** — open **Custom launchers…** from the panel footer (or the topbar icon, or the palette
+  command **AI Sessions: Custom Launchers…**). Add/edit/delete launchers; each has a **name**, a
+  **command** (e.g. `claude --model opus --dangerously-skip-permissions`), and optional
+  **environment variables** entered one `KEY=VALUE` per line.
+- **Launch** — run **AI Sessions: Launch Custom…** from the command palette, pick a launcher, and it
+  opens a new terminal tab in the active worktree running that command.
+
+Launchers are stored in the extension's own per-worktree-independent storage (the `customLaunchers`
+key). Environment variables are applied by prefixing the command with shell-quoted `KEY=value`
+assignments — e.g. a launcher named *Claude (Opus)* with command `claude --model opus` and env
+`ANTHROPIC_LOG=debug` runs `ANTHROPIC_LOG='debug' claude --model opus`. Only the command line is kept
+raw so flags work; env **values** are always shell-quoted.
+
 ## Remote workspaces
 
 On SSH / remote Muxy workspaces, `muxy.exec` runs on the **remote** host. You see remote session stores, not Mac-local history from a local-only CLI. Remotes need the same host tools (and `sqlite3` for Codex/Copilot).
@@ -149,7 +169,11 @@ src/lib/discover/*               # per-provider "distinct project paths" (revers
 src/lib/discover/index.js        # collectProjects + registered-set diff (synchronous)
 src/lib/provider-icons.js        # vendored monochrome Muxy ProviderIcons
 src/assets/provider-icons/       # SVG sources (re-copy from muxy core if needed)
+src/lib/launchers.js             # launcher model, validation, command builder
+src/launchers/manager.js         # Custom Launchers webview-modal manager UI
+panel/launchers.html             # manager modal page entry
 scripts/resume-picker-entry.js   # Resume… palette entry (bundled to IIFE)
+scripts/launch-picker-entry.js   # Launch Custom… palette entry (bundled to IIFE)
 scripts/import-projects-entry.js # Import Projects… palette entry (bundled to IIFE)
 scripts/*.built.js               # built IIFEs for runScript
 test/                            # Bun tests (host-fs, scan, manage, discover, helpers)

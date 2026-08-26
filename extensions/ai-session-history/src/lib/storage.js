@@ -38,3 +38,24 @@ export async function getListFilter() {
 export async function setListFilter(filter) {
   return write(LIST_FILTER, filter);
 }
+
+const CUSTOM_LAUNCHERS = "customLaunchers";
+
+export async function getCustomLaunchers() {
+  try {
+    const value = await muxy.storage.get(CUSTOM_LAUNCHERS);
+    return Array.isArray(value) ? value : [];
+  } catch {
+    // A denied/absent read must never break the manager UI.
+    return [];
+  }
+}
+
+export async function setCustomLaunchers(list) {
+  try {
+    await muxy.storage.set(CUSTOM_LAUNCHERS, Array.isArray(list) ? list : []);
+    return true;
+  } catch {
+    return false;
+  }
+}

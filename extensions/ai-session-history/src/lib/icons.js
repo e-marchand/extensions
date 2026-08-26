@@ -12,6 +12,9 @@ const ICONS = {
   /** Chevron pointing down (menu closed); rotate 180° when open if needed. */
   chevron:
     '<path d="m6 9 6 6 6-6"/>',
+  plus: '<path d="M5 12h14"/><path d="M12 5v14"/>',
+  /** Terminal prompt glyph — Custom Launchers actions. */
+  terminal: '<path d="m4 17 6-6-6-6"/><path d="M12 19h8"/>',
 };
 
 export function icon(name, size = 14, className = "", strokeWidth = 2) {

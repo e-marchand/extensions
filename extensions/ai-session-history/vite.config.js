@@ -14,6 +14,7 @@ export default defineConfig({
     rollupOptions: {
       input: {
         sessions: resolve(__dirname, "panel/index.html"),
+        launchers: resolve(__dirname, "panel/launchers.html"),
       },
     },
   },

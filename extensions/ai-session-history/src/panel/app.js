@@ -678,6 +678,7 @@ export class SessionsPanel {
                 ? this.groupedBody(visible)
                 : this.flatBody(flat, visible[0]),
       ),
+      this.launchersBar(),
       this.footer(),
     );
   }
@@ -1051,6 +1052,40 @@ export class SessionsPanel {
           )
         : null,
     );
+  }
+
+  launchersBar() {
+    return h(
+      "div",
+      { class: "border-t border-border px-2.5 py-1.5" },
+      h(
+        "button",
+        {
+          type: "button",
+          class:
+            "flex h-6 w-full items-center justify-center gap-1.5 rounded-md text-[11px] text-muted-foreground outline-none hover:bg-accent hover:text-foreground focus-visible:ring-1 focus-visible:ring-primary",
+          onclick: () => this.openLaunchersManager(),
+        },
+        icon("terminal", 11),
+        "Custom launchers…",
+      ),
+    );
+  }
+
+  openLaunchersManager() {
+    try {
+      muxy.modal.openWebview({
+        entry: "panel/launchers.html",
+        width: 520,
+        height: 460,
+      });
+    } catch (e) {
+      try {
+        muxy.toast({ title: "AI Sessions", body: "Could not open launchers manager" });
+      } catch (_) {
+        /* ignore */
+      }
+    }
   }
 
   footer() {

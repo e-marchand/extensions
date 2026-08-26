@@ -1,6 +1,6 @@
 {
   "name": "ai-session-history",
-  "version": "0.4.0",
+  "version": "0.5.0",
   "private": true,
   "type": "module",
   "scripts": {
@@ -91,6 +91,27 @@
           "kind": "runScript",
           "script": "scripts/import-projects.built.js"
         }
+      },
+      {
+        "id": "launch-picker",
+        "title": "AI Sessions: Launch Custom…",
+        "subtitle": "Start a saved custom launcher (command line + options + env)",
+        "action": {
+          "kind": "runScript",
+          "script": "scripts/launch-picker.built.js"
+        }
+      },
+      {
+        "id": "manage-launchers",
+        "title": "AI Sessions: Custom Launchers…",
+        "subtitle": "Add, edit, or remove custom AI launchers",
+        "action": {
+          "kind": "openModal",
+          "entry": "panel/launchers.html",
+          "width": 520,
+          "height": 460,
+          "dismissOnOutsideClick": true
+        }
       }
     ],
     "topbarItems": [
@@ -109,15 +130,28 @@
         },
         "tooltip": "Import projects from AI sessions",
         "command": "import-projects"
+      },
+      {
+        "id": "launchers",
+        "icon": {
+          "symbol": "terminal"
+        },
+        "tooltip": "Custom launchers",
+        "command": "manage-launchers"
       }
     ],
     "marketplace": {
       "author": "Appelgriebsch",
       "github": "appelgriebsch",
       "repository": "https://github.com/muxy-app/extensions",
-      "categories": ["productivity", "ai"],
+      "categories": [
+        "productivity",
+        "ai"
+      ],
       "icon": "icon.svg",
-      "screenshots": ["screenshot-1.png"]
+      "screenshots": [
+        "screenshot-1.png"
+      ]
     }
   }
 }

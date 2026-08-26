@@ -62,3 +62,4 @@ async function bundleScript(name, entry) {
 
 await bundleScript("resume-picker", resolve(root, "scripts/resume-picker-entry.js"));
 await bundleScript("import-projects", resolve(root, "scripts/import-projects-entry.js"));
+await bundleScript("launch-picker", resolve(root, "scripts/launch-picker-entry.js"));
